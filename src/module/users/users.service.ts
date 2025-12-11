@@ -1,34 +1,49 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { UsersRepository } from './users.repository';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import * as bcrypt from 'bcrypt';
+import { UserResponseDto } from './dto/user-response.dto';
 
 @Injectable()
 export class UsersService {
   constructor(private readonly usersRepository: UsersRepository) {}
 
-  async create(data: CreateUserDto) {
+  async registerUser(data: CreateUserDto) {
     const existing = await this.usersRepository.findByEmail(data.email);
     if (existing) {
       throw new BadRequestException('Email ya registrado');
     }
+    const { password, ...rest } = data;
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    return this.usersRepository.create(data);
+    return this.usersRepository.registerUser({
+      ...rest,
+      password: hashedPassword,
+    });
   }
 
-  findAll() {
-    return this.usersRepository.findAll();
+  async findAllUser(): Promise<UserResponseDto[]> {
+    const users = await this.usersRepository.findAllUser();
+    return users.map(({ password, ...rest }) => rest);
   }
 
-  findOne(id: number) {
-    return this.usersRepository.findOne(id);
+  async findOne(id: string): Promise<UserResponseDto | null> {
+    const user = await this.usersRepository.findOne(id);
+    if (!user) throw new NotFoundException('Usuario no encontrado');
+    const { password, ...rest } = user;
+    return rest;
   }
 
-  update(id: number, data: UpdateUserDto) {
-    return this.usersRepository.update(id, data);
+  async update(id: string, data: UpdateUserDto) {
+    return await this.usersRepository.update(id, data);
   }
 
-  remove(id: number) {
-    return this.usersRepository.delete(id);
+  async remove(id: string) {
+    return await this.usersRepository.delete(id);
   }
 }

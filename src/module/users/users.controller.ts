@@ -10,19 +10,22 @@ import {
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ApiCreateUser } from './doc/registerUser.doc';
+import { UserResponseDto } from './dto/user-response.dto';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  create(@Body() dto: CreateUserDto) {
-    return this.usersService.create(dto);
+  @ApiCreateUser()
+  registerUser(@Body() dto: CreateUserDto) {
+    return this.usersService.registerUser(dto);
   }
 
   @Get()
-  findAll() {
-    return this.usersService.findAll();
+  findAllUser(): Promise<UserResponseDto[]> {
+    return this.usersService.findAllUser();
   }
 
   @Get(':id')
@@ -37,6 +40,6 @@ export class UsersController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+    return this.usersService.remove(id);
   }
 }

@@ -7,35 +7,35 @@ import { UpdateUserDto } from './dto/update-user.dto';
 export class UsersRepository {
   constructor(private prisma: PrismaService) {}
 
-  create(data: CreateUserDto) {
-    return this.prisma.user.create({ data });
+  async registerUser(data: CreateUserDto) {
+    return await this.prisma.user.create({ data });
   }
 
-  findAll() {
-    return this.prisma.user.findMany();
+  async findAllUser() {
+    return await this.prisma.user.findMany();
   }
 
-  findOne(id: number) {
-    return this.prisma.user.findUnique({
+  async findOne(id: string) {
+    return await this.prisma.user.findUnique({
       where: { id },
     });
   }
 
-  findByEmail(email: string) {
-    return this.prisma.user.findUnique({
+  async findByEmail(email: string) {
+    return await this.prisma.user.findUnique({
       where: { email },
     });
   }
 
-  update(id: number, data: UpdateUserDto) {
-    return this.prisma.user.update({
+  async update(id: string, data: UpdateUserDto) {
+    return await this.prisma.user.update({
       where: { id },
       data,
     });
   }
 
-  delete(id: number) {
-    return this.prisma.user.delete({
+  async delete(id: string) {
+    return await this.prisma.user.delete({
       where: { id },
     });
   }

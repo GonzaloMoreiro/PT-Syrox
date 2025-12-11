@@ -18,8 +18,8 @@ model User {
   name      String
   email     String    @unique
   password  String
-  address   String?
-  phone     String?
+  address   String
+  phone     String
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
@@ -37,6 +37,7 @@ model Product {
   id String @id @default(uuid())
   name        String
   price       Float
+  stock       Int
   description String?
   categoryId  String
   createdAt   DateTime   @default(now())
