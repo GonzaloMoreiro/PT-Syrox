@@ -9,9 +9,18 @@ import { UsersRepository } from './module/users/users.repository';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProductsModule } from './module/products/products.module';
 import { AuthModule } from './module/auth/auth.module';
+import { SalesModule } from './module/sales/sales.module';
 
 @Module({
-  imports: [CategoriesModule, UsersModule, PrismaModule, ProductsModule, AuthModule],
+  imports: [
+    CategoriesModule,
+    UsersModule,
+    PrismaModule,
+    ProductsModule,
+    AuthModule,
+    SalesModule,
+    SalesModule,
+  ],
   controllers: [AppController, UsersController],
   providers: [AppService, UsersService, UsersRepository],
 })

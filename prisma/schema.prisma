@@ -13,6 +13,22 @@ datasource db {
   url      = env("DATABASE_URL")
 
 }
+// --- ENUMS PARA ESTADOS DE VENTA Y PAGO ---
+enum SaleStatus {
+  EN_PREPARACION // El pedido se está alistando (default)
+  ENVIADO        // El pedido salió de bodega
+  CANCELADO      // El pedido fue cancelado
+  COMPLETADO     // El pedido fue recibido por el cliente
+}
+
+enum PaymentStatus {
+  PENDIENTE // El pago aún no se ha procesado (default)
+  PAGADO    // Pago exitoso
+  FALLIDO   // El pago falló (ej: tarjeta rechazada)
+}
+
+// --- MODELOS DE DATOS ---
+
 model User {
   id String @id @default(uuid())
   name      String
@@ -22,14 +38,18 @@ model User {
   phone     String
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+
+  // 1. Relación: Un Usuario (Cliente) puede tener muchas Ventas (pedidos)
+  sales     Sale[]
 }
 
 model Category {
   id String @id @default(uuid())
   name      String
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
+  // Relación: Una Categoría tiene muchos Productos
   products  Product[]
 }
 
@@ -43,26 +63,42 @@ model Product {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
-  category    Category   @relation(fields: [categoryId], references: [id])
-  saleItems   SaleItem[]
+  // Relaciones
+  category    Category   @relation(fields: [categoryId], references: [id]) // Muchos Productos pertenecen a una Categoría
+  saleItems   SaleItem[] // Muchos Productos pueden estar en varios Ítems de Venta
 }
 
 model Sale {
   id String @id @default(uuid())
-  total     Float      @default(0)
-  createdAt DateTime   @default(now())
+  
+  // INFORMACIÓN DE RELACIÓN CON CLIENTE
+  userId    String // Clave foránea que apunta al Cliente/User
+  client    User   @relation(fields: [userId], references: [id]) // Relación: Una Venta pertenece a un Cliente
+  
+  // INFORMACIÓN DEL PEDIDO
+  orderNumber String @unique @default(uuid()) // Número de orden, puede ser un UUID por defecto o secuencial
+  total     Float      @default(0)
+  
+  // ESTADOS (PARA EL DASHBOARD)
+  status    SaleStatus   @default(EN_PREPARACION)   // Estado del pedido (Enum)
+  paymentStatus PaymentStatus @default(PENDIENTE)   // Estado del pago (Enum)
 
-  items     SaleItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt 
+
+  // RELACIÓN CON ÍTEMS
+  items     SaleItem[] // Una Venta tiene muchos Ítems de Venta
 }
 
 model SaleItem {
   id String @id @default(uuid())
   quantity  Int      @default(1)
-  price     Float
+  price     Float    // Precio unitario al momento de la venta. Es crucial para no depender del precio del Product si cambia después.
   saleId    String
   productId String
 
-  sale      Sale     @relation(fields: [saleId], references: [id])
-  product   Product  @relation(fields: [productId], references: [id])
+  // Relaciones
+  sale      Sale     @relation(fields: [saleId], references: [id]) // Un Ítem pertenece a una Venta
+  product   Product  @relation(fields: [productId], references: [id]) // Un Ítem hace referencia a un Producto
 }
 
